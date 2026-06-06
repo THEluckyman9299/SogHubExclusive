@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sog Hub Prototype v3</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#00ff00;font-family:Inter,sans-serif;overflow:hidden}
+.launcher{
+position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
+width:90px;height:90px;border-radius:25px;
+background:url('https://i.pinimg.com/736x/a7/70/03/a77003bbf28be4fd9cc91d197d726b20.jpg') center/cover;
+cursor:move;box-shadow:0 15px 40px rgba(0,0,0,.45);z-index:1000;
+transition:transform .2s;
+}
+.launcher:hover{transform:translate(-50%,-50%) scale(1.08)}
+
+.executor{
+display:none;position:fixed;left:50%;top:50%;
+transform:translate(-50%,-50%);
+width:1000px;height:650px;background:#111;color:#fff;
+border-radius:24px;overflow:hidden;
+box-shadow:0 30px 70px rgba(0,0,0,.5);
+}
+.main{display:flex;height:100%}
+.sidebar{width:180px;background:#171717;padding:15px;display:flex;flex-direction:column;gap:10px}
+.content{flex:1;padding:20px;overflow:auto;position:relative}
+.tab{background:#232323;padding:14px;border-radius:12px;cursor:pointer;transition:.25s}
+.tab:hover,.activeTab{background:#353535;transform:translateX(4px)}
+.page{display:none;animation:fade .3s}
+.page.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+button{
+background:#2a2a2a;color:#fff;border:none;padding:12px 18px;
+border-radius:12px;cursor:pointer;
+transition:transform .15s ease;
+}
+button:hover{transform:scale(1.05)}
+button:active{transform:scale(.90)}
+
+.trending{text-align:center;font-size:30px;font-weight:700;margin-bottom:20px}
+.homeItem{display:flex;gap:20px;align-items:center;margin-bottom:25px;background:#181818;padding:10px;border-radius:18px}
+.homeItem img{width:170px;height:170px;border-radius:18px;object-fit:cover}
+
+.closeBtn{position:absolute;bottom:35px;left:50%;transform:translateX(-50%)}
+.creatorBtn{position:absolute;bottom:35px;left:50%;transform:translateX(-50%)}
+
+textarea{width:100%;height:450px;background:#1c1c1c;color:#fff;border:none;border-radius:16px;padding:15px}
+.success{display:none;height:450px;align-items:center;justify-content:center;font-family:"Press Start 2P";font-size:24px}
+input{width:100%;padding:12px;background:#222;color:#fff;border:none;border-radius:12px}
+.result{display:none;margin-top:15px;animation:fade .4s}
+.result img{width:180px;border-radius:16px}
+.center{text-align:center}
+
+.popup{display:none;position:absolute;inset:0;background:rgba(0,0,0,.75);justify-content:center;align-items:center}
+.card{width:450px;background:#181818;border-radius:20px;padding:25px;position:relative;text-align:center}
+.x{
+position:absolute;right:12px;top:12px;width:40px;height:40px;border-radius:50%;
+background:red;color:#fff;font-weight:bold;display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+.comingSoon{position:absolute;top:45%;left:50%;transform:translate(-50%,-50%);font-size:40px}
+</style>
+</head>
+<body>
+
+<div class="launcher" id="launcher"></div>
+
+<div class="executor" id="exec">
+<div class="main">
+<div class="sidebar">
+<div class="tab activeTab" onclick="showPage('home',this)">Home</div>
+<div class="tab" onclick="showPage('executorPage',this)">Executor</div>
+<div class="tab" onclick="showPage('search',this)">Search</div>
+<div class="tab" onclick="showPage('dryer',this)">IP Drier</div>
+<div class="tab" onclick="showPage('settings',this)">Settings</div>
+</div>
+
+<div class="content">
+
+<div id="home" class="page active">
+<div class="trending">Trending</div>
+<div class="homeItem">
+<img src="https://pbs.twimg.com/media/GPrys7ub0AAxRz2.jpg">
+<h2>Slap Battles Sog Hub Exclusive 2026</h2>
+</div>
+<div class="homeItem">
+<img src="https://images-eds-ssl.xboxlive.com/image?url=4rt9.lXDC4H_93laV1_eHM0OYfiFeMI2p9MWie0CvL99U4GA1gf6_kayTt_kBblFwHwo8BW8JXlqfnYxKPmmBevsdZpJiIhrXJKvOSYipsYbqdUBBn6r6Hb.keWYwuyu5QJ84NCtr5ij3JMrlPglnBeeDch3kJBTCQneZnfl9dA-&format=source">
+<h2>Join Our Discord</h2>
+</div>
+<button class="closeBtn" onclick="closeExec()">Close</button>
+</div>
+
+<div id="executorPage" class="page">
+<textarea id="code"></textarea>
+<div id="success" class="success">COMMAND SUCCESSFUL</div>
+<div style="display:flex;gap:10px;margin-top:10px">
+<button onclick="code.value=''">Clear</button>
+<button onclick="executeFake()">Execute</button>
+<button>Import</button>
+<button>Export</button>
+</div>
+</div>
+
+<div id="search" class="page">
+<input id="searchInput" placeholder="Search..." oninput="doSearch()">
+<div class="result" id="slap"><img src="https://pbs.twimg.com/media/GPrys7ub0AAxRz2.jpg"></div>
+<div class="result" id="sog"><img src="https://static.wikia.nocookie.net/silly-uf/images/e/e9/Soggy_24.png/revision/latest/thumbnail/width/360/height/450?cb=20250123115628"></div>
+</div>
+
+<div id="dryer" class="page center">
+<h2>Type User's Discord Or Roblox Name</h2>
+<button onclick="selectType('Roblox')">Roblox</button>
+<button onclick="selectType('Discord')">Discord</button>
+<p id="selected"></p>
+<input placeholder="Username" onkeydown="if(event.key==='Enter')dry()">
+<p id="drymsg"></p>
+</div>
+
+<div id="settings" class="page">
+<div class="comingSoon">Coming Soon</div>
+<button class="creatorBtn" onclick="popup.style.display='flex'">Creator</button>
+</div>
+
+<div class="popup" id="popup">
+<div class="card">
+<div class="x" onclick="popup.style.display='none'">X</div>
+<h3 id="popupText">Prototype Website created by Luckyman9299</h3>
+<button id="instBtn" onclick="instructions()">Instructions</button>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+
+<script>
+const launcher=document.getElementById('launcher');
+const execBox=document.getElementById('exec');
+
+launcher.onclick=function(){
+if(window.dragMoved){window.dragMoved=false;return;}
+launcher.style.display='none';
+execBox.style.display='block';
+execBox.animate([
+{transform:'translate(-50%,-50%) scale(.7)',opacity:0},
+{transform:'translate(-50%,-50%) scale(1)',opacity:1}
+],{duration:350,fill:'forwards'});
+};
+
+function closeExec(){
+execBox.style.display='none';
+launcher.style.display='block';
+}
+
+function showPage(id,e){
+document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+document.querySelectorAll('.tab').forEach(t=>t.classList.remove('activeTab'));
+e.classList.add('activeTab');
+}
+
+function executeFake(){
+code.style.display='none';
+success.style.display='flex';
+code.value='';
+setTimeout(()=>{
+success.style.display='none';
+code.style.display='block';
+},2200);
+}
+
+function doSearch(){
+let q=searchInput.value.toLowerCase();
+slap.style.display=q.includes('slap battles')?'block':'none';
+sog.style.display=q.includes('sog hub')?'block':'none';
+}
+
+function selectType(v){
+selected.innerText=v+' Selected';
+selected.animate([{opacity:0,transform:'translateY(10px)'},{opacity:1,transform:'translateY(0)'}],{duration:250});
+}
+
+function dry(){
+drymsg.innerText='Drying...';
+let i=0;
+let interval=setInterval(()=>{
+i++;
+drymsg.innerText='Drying'+'.'.repeat((i%3)+1);
+},350);
+
+setTimeout(()=>{
+clearInterval(interval);
+drymsg.innerText='Dried Successfully';
+drymsg.animate([{opacity:0,transform:'scale(.8)'},{opacity:1,transform:'scale(1)'}],{duration:400});
+},2000);
+}
+
+function instructions(){
+popupText.innerText='You can only search two things on the Search tab, Slap Battles and Sog Hub. Nothing in this Prototype is actually functional.';
+instBtn.style.display='none';
+}
+
+// draggable launcher only
+let dragging=false,startX,startY,moved=false;
+launcher.addEventListener('mousedown',e=>{
+dragging=true;moved=false;
+startX=e.clientX-launcher.offsetLeft;
+startY=e.clientY-launcher.offsetTop;
+});
+document.addEventListener('mousemove',e=>{
+if(!dragging) return;
+moved=true;
+window.dragMoved=true;
+launcher.style.left=(e.clientX-startX+45)+'px';
+launcher.style.top=(e.clientY-startY+45)+'px';
+launcher.style.transform='translate(-50%,-50%)';
+});
+document.addEventListener('mouseup',()=>{
+dragging=false;
+setTimeout(()=>window.dragMoved=false,50);
+});
+</script>
+</body>
+</html>
